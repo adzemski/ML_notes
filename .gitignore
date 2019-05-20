@@ -1,3 +1,15 @@
+/**
+!/.gitignore
+!/tex/ 
+!/tex/**
+!/R_code/
+!/R_code/penalized_regression/
+!/R_code/penalized_regression/**
+
+*.Rhistory
+*.DS_Store
+*/.Rproj.user/*
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

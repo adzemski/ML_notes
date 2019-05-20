@@ -1,0 +1,142 @@
+\documentclass[xcolor=dvipsnames]{beamer}
+
+\usepackage[]{graphicx}
+\usepackage[]{color}
+
+\usetheme{Singapore}
+\setbeamertemplate{itemize subitem}[triangle]
+
+% for handout version (uncomment to get handout)
+\usepackage{pgfpages}
+%\pgfpagesuselayout{2 on 1}[a4paper,border shrink=2mm]
+
+% \usepackage{tabularx}
+% \usepackage{caption}
+\usepackage{booktabs}
+\usepackage{colortbl, xcolor}
+% \usepackage{comment}
+% \setbeamertemplate{theorems}[numbered]
+
+% bibliography
+\usepackage[backend = biber, style = authoryear]{biblatex}
+
+\usepackage{amssymb, amsmath, amsthm, bm, mathtools}
+\usepackage{graphicx}
+
+% for some graphs
+\usepackage{tabularx}
+% \usepackage{tikz, xcolor}
+% \usetikzlibrary{patterns, shapes, backgrounds, positioning, arrows}
+%\usepackage{gnuplot-lua-tikz}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newtheorem{proposition}{Proposition}
+
+\author[Dzemski]{Andreas Dzemski\inst{1}}
+\institute{\inst{1} University of Gothenburg}
+\title{Mini-course Machine Learning in Empirical Economic Research}
+\date{\today}
+%
+\renewcommand*{\bibfont}{\scriptsize}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\makebox[1em][l]{\ding{51}}}%
+\newcommand{\xmark}{\makebox[1em][l]{\ding{55}}}%
+
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\var}{var}
+%
+%
+%
+\begin{document}
+\maketitle
+
+\begin{frame}
+\begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/dense_plot_coefficients.pdf}
+   \caption{True values of coefficients}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/dense_plot_coef_once.pdf}
+   \caption{Estimation results}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/dense_plot_mean.pdf}
+   \caption{Expected estimates (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{OLS is terrible for prediction}
+\begin{table}
+  \input{../../R_code/penalized_regression/output_for_slides/dense_mse_table.tex}
+  \caption{Mean-squared-error $MSE(f)$}
+\end{table}
+\begin{align*}
+  MSE(f) = & \E \int_x \left( \hat{f}(x) - f(x) \right)^2 \, dF(x)
+  \\
+  = & \int_x \left( \E \hat{f}(x) - f(x) \right)^2 \, dF(x)
+  + \int_x \E \left(\hat{f}(x) - \E \hat{f}(x)\right)^2 \, dF(x)
+  \\
+  = & \int_x bias^2\left(f(x)\right) \, dF(x)
+  + \int_x \var\left(\hat{f}(x)\right) \, dF(x).
+\end{align*}
+\end{frame}
+
+\begin{frame}{Under Gauss-Markov assumptions OLS is unbiased}
+\begin{align*}
+  \int_x bias^2\left(f(x)\right) \, dF(x) =& \int_x (\E (\hat{\beta}'x) - \beta'x) \,dF(x)
+  \\
+  =& \int_x \big(\underbrace{\E[\hat{\beta} - \beta]}_{=0}  \big)' x \, dF(x) = 0
+\end{align*}
+\begin{itemize}
+  \item For prediction unbiasedness is not a desirable property.
+  \item Not surprising that Ridge performs best (James-Stein estimator, Empirical Bayes theory)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Lasso selects variables}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/dense_plot_included.pdf}
+   \caption{Probability of including variables (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{A sparse design}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_plot_coefficients.pdf}
+   \caption{True values of coefficients}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Lasso detects many of the zero coefficients}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_uncorrelated_plot_coef_once.pdf}
+   \caption{Estimation results}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Lasso is good at selecting the true model}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_uncorrelated_plot_included.pdf}
+   \caption{Probability of including variables (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{But still shrinkage}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_uncorrelated_plot_mean.pdf}
+   \caption{Expected estimates (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+
+
+\appendix
+
+\end{document}
