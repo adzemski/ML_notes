@@ -249,7 +249,7 @@ coef_true <- data.frame(method = rep_len("truth", p),
                         j = seq_len(p), b = b)
 
 # plot coefficients
-pdf("sparse_uncorr_plot_coefficients.pdf", width = 4.2, height = 2.5)
+pdf("sparse_plot_coefficients.pdf", width = 4.2, height = 2.5)
 print(ggplot2::ggplot(coef_true, aes(x = j, y = b)) + 
         geom_point() + theme_bw() + guides(color = FALSE) + ylab("True value of coefficient"))
 dev.off()
@@ -284,3 +284,34 @@ MC_sim_sparse_corr_post <-
                      num_sim = 200, lambda.min_ridge = "lambda.min",
                      lambda.min_lasso = "lambda.min", methods = c("ols", "lasso", "post_lasso"), 
                      always_include_first = TRUE)
+
+## cross-validation example 
+
+set.seed(20180524)
+training_data <- generate_data_sparse_corr()
+
+lasso_cv <- 
+  cv.glmnet(as.matrix(training_data[, 2:(p+1)]), training_data$y, 
+            family = "gaussian", alpha = 1, standardize = FALSE, nfolds = 10, 
+            lambda = exp(seq(log(0.002), log(1.6), length.out = 30)))
+
+df_lasso_cv <- data.frame(lambda=lasso_cv$lambda, cvm=lasso_cv$cvm, 
+                          upper = lasso_cv$cvm + 2*lasso_cv$cvsd,
+                          lower = lasso_cv$cvm - 2*lasso_cv$cvsd)
+
+plot_lasso_cv <- ggplot(df_lasso_cv, aes(x=log(lambda), y=cvm)) +
+  geom_point(color = "red") + theme_bw() + geom_errorbar(aes(ymin = lower, ymax = upper), color="grey") 
+
+plot_lasso_cv
+
+pdf("cv_example_lambda_path.pdf", width = 4.2, height = 2.5)
+  plot_lasso_cv
+dev.off()
+
+plot_lasso_cv <- plot_lasso_cv + 
+  geom_vline(xintercept = log(lasso_cv$lambda.min), linetype = "dashed") +
+  geom_vline(xintercept = log(lasso_cv$lambda.1se), linetype = "dashed") 
+
+pdf("cv_example_lambda_choice.pdf", width = 4.2, height = 2.5)
+  plot_lasso_cv
+dev.off()
