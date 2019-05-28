@@ -1,0 +1,83 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage{hyperref}
+
+\usepackage[style = authoryear, backend = biber]{biblatex} 
+\addbibresource{../ML_course.bib}
+
+\usepackage{microtype}
+\usepackage{amsmath, amssymb, amsthm, mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\DeclarePairedDelimiter\norm\lVert\rVert
+\DeclarePairedDelimiter\abs\lvert\rvert
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\reals}{\mathcal{R}}
+
+\title{Machine Learning for Empirical Economic Research, Part I}
+\author{Andreas Dzemski}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Course literature}
+The textbook for this course is
+
+\vspace*{6pt}\noindent
+\fullcite{hastie2009elements}.
+
+\vspace*{6pt}\noindent
+It is available for free online at \url{https://web.stanford.edu/~hastie/ElemStatLearn/}.
+
+
+\section*{Examination}
+PhD students can study this course (i.e., both Part 1 and Part 2) as a reading course (individuellt åtagande) and receive 3 ECTS points. To receive credit, students have to study the reading list, participate in the discussions in class and complete a written assignment. The written assignment will be customized to the student’s individual research interests. It can be either a research proposal for an empirical project using a Machine Learning method, or an extended referee report for an applied or theoretical paper on Machine Learning methods in economics.
+
+
+\section*{Lectures}
+\subsection*{Lecture 1}
+
+\textbf{June 4, 3-5pm in F45}
+
+\vspace*{6pt}\noindent
+We will try to define what “Machine Learning” is and discuss how it is different from more traditional econometric methods and how it can be part of an empirical research strategy. Moreover, we will discuss tools (programming languages, libraries) useful for implementing Machine Learning methods. 
+
+
+\vspace{6pt}
+\textbf{Reading:} \textcite{mullainathan2017machine}; \textcite{varian2014big}
+Chapter~7.1-7.3, 7.10, 7.12 of \textcite{hastie2009elements}
+
+\subsection*{Lecture 2}
+\textbf{June 5, 3-5pm in C32}
+
+\vspace*{6pt}\noindent
+We introduce the supervised learning framework and some central concepts related to it such as regularization and $k$-fold cross-validation. We discuss penalized linear regression (Ridge and Lasso) as an example of a supervised learning method.
+
+
+\vspace{10pt}
+\textbf{Reading:} Chapter~2.1-2.7, 2.9, 3.4 of \textcite{hastie2009elements}
+
+
+\subsection*{Lecture 3}
+\textbf{June 7, 3-5pm in B21}
+
+\vspace*{6pt}\noindent
+We apply high-dimensional regression techniques to estimate treatment effects.
+
+
+\vspace{10pt}
+\textbf{Reading:} \textcite{belloni2014inference,belloni2017program,athey2018approximate}
+
+
+\nocite{*}
+
+\printbibliography
+
+\end{document}

@@ -1,0 +1,678 @@
+\documentclass[xcolor=dvipsnames]{beamer}
+
+\usepackage[]{graphicx}
+\usepackage[]{color}
+
+\usetheme{Singapore}
+\setbeamertemplate{itemize subitem}[triangle]
+
+% for handout version (uncomment to get handout)
+\usepackage{pgfpages}
+%\pgfpagesuselayout{2 on 1}[a4paper,border shrink=2mm]
+
+% \usepackage{tabularx}
+% \usepackage{caption}
+\usepackage{booktabs}
+\usepackage{colortbl, xcolor}
+% \usepackage{comment}
+% \setbeamertemplate{theorems}[numbered]
+
+% bibliography
+\usepackage[backend = biber, style = authoryear]{biblatex}
+\addbibresource{../ML_course.bib}
+
+\usepackage{amssymb, amsmath, amsthm, bm, mathtools}
+\usepackage{graphicx}
+
+% for some graphs
+\usepackage{tabularx}
+% \usepackage{tikz, xcolor}
+% \usetikzlibrary{patterns, shapes, backgrounds, positioning, arrows}
+%\usepackage{gnuplot-lua-tikz}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newtheorem{proposition}{Proposition}
+
+\author[Dzemski]{Andreas Dzemski\inst{1}}
+\institute{\inst{1} University of Gothenburg}
+\title{Mini-course Machine Learning in Empirical Economic Research}
+\subtitle{Lecture 3: Penalized regression and applications in treatment evaluation}
+\date{\today}
+%
+\renewcommand*{\bibfont}{\scriptsize}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\makebox[1em][l]{\ding{51}}}%
+\newcommand{\xmark}{\makebox[1em][l]{\ding{55}}}%
+
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\diag}{Diag}
+\DeclareMathOperator{\cor}{cor}
+\DeclareMathOperator{\argmin}{arg\,min}
+%
+%
+%
+\begin{document}
+\maketitle
+
+\begin{frame}{Setting}
+Fit a regression curve to model
+\begin{align*}
+  y_i = f(x_i) + \epsilon_i = \beta_0 + x_i'\beta_1 + \epsilon_i
+\end{align*}
+\begin{itemize}
+  \item $n$ observations
+  \item $x_i$ = $p_n$-dimensional covariate vector
+  \item $\epsilon_i$ = idiosyncratic error term
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Objective}
+\begin{itemize}
+  \item prediction (for now)
+  \item training error = measure of \emph{in sample} fit
+  \begin{align*}
+  \overline{\text{err}} (\hat{f}) 
+  = 
+    \frac{1}{n} \sum_{i=1}^n \left(y_i - \hat{f}(x_i)\right)^2 
+    = 
+    \frac{1}{n} \sum_{i=1}^n \left(y_i - \hat{\beta}_0 - x_i'\hat{\beta}_1 \right)^2  
+  \end{align*}
+  \item EPE (expected prediction error) = measure of fit on a new observation
+  \item assume $\epsilon \perp x$, $\E \epsilon = 0$ and $\E \epsilon^2 = \sigma^2$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Expected prediction error}
+\begin{itemize}
+  \item $\E_{\mathcal{T}}$ = expectation operator wrt training sample
+  \item $E_{y,x}$ = integral wrt probability measure of a new $(y, x')$ observation  
+\end{itemize}
+\begin{align*}
+  EPE (\hat{f}) =& \E_{\mathcal{T}} E_{y,x} \left(y - \hat{f} (x) \right)^2
+  \\
+  =& \sigma^2 + E_{y,x} 
+  \Big\{ 
+    \left(f(x) - \E_{\mathcal{T}}\hat{f}(x)\right)^2 
+    + \E_{\mathcal{T}} \left(\hat{f}(x) - \E_{\mathcal{T}} \hat{f}(x)\right)^2 
+  \Big\}
+\\
+  =& \underbrace{\sigma^2}_{\text{irreducible error}} + 
+  \underbrace{E_{y,x} \bias^2\left(\hat{f}(x)\right)}_{\text{bias}} + 
+  \underbrace{E_{y,x} \var\left(\hat{f}(x)\right)}_{\text{variance}}
+\end{align*}
+\end{frame}
+
+
+\begin{frame}{Gauss-Markov assumptions = OLS is BLUE}
+OLS is unbiased 
+\begin{align*}
+  \bias \left(\hat{f}(x) \right) = \E_{\mathcal{T}} \left(\hat{\beta}^{\text{ols}} - \beta \right) x = 0
+\end{align*}
+but has potentially large variance
+\begin{align*}
+  \var \left(\hat{f} (x) \right) \approx \frac{\sigma^2 p_n}{n}
+\end{align*}
+\begin{itemize}
+  \item OLS is not well-suited for prediction
+  \begin{itemize}
+    \item
+    tries to estimate every component $\beta_j$
+    \item 
+    doesn't trade off noise and predictive power
+  \end{itemize}
+  \item if $p_n \gg n$ then OLS is not even computable
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Regression with $p_n \gg n$}
+\begin{itemize}
+  \item OLS estimator
+  \begin{align*}
+    \hat{\beta}^{\text{ols}} = \left(\mathbf{X}'\mathbf{X}\right)^{-1} \mathbf{X}' \mathbf{y}
+  \end{align*}
+  \item why is this not computable for $p_n \gg n$?
+  \pause
+  \item Idea of ridge regression:
+  \begin{align*}
+    \hat{\beta}^{\text{ridge}} = \left(\mathbf{X}'\mathbf{X} + \lambda \diag\big((0, 1, \dotsc 1)'\big) \right)^{-1} \mathbf{X}' \mathbf{y}
+  \end{align*}
+  \item $\lambda$ = regularization parameter
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Ridge regression}
+\begin{align*}
+  \hat{\beta}^{\text{ridge}} = \argmin_{\beta_0 \in \mathbb{R}, \beta_1 \in \mathbb{R}^{p_n}} \sum_{i=1}^n \left(y - \beta_0 - x_i'\beta_1\right)^2 + \lambda \lVert \beta_1 \rVert_2^2 
+\end{align*}
+where $\lVert \beta_1 \rVert_q = \left(\sum_{j=1}^{p_n} \lvert \beta_{1, j} \rvert^q \right)^{1/q}$.
+\end{frame}
+
+
+\begin{frame}{$L_q$-penalized regression}
+\begin{align*}
+  \hat{\beta}^{\text{ridge}} = \argmin_{\beta_0 \in \mathbb{R}, \beta_1 \in \mathbb{R}^{p_n}} \underbrace{\sum_{i=1}^n \left(y - \beta_0 - x_i'\beta_1\right)^2}_{\text{loss function}} + \underbrace{\lambda \lVert \beta_1 \rVert_q^q}_{\text{penalty term}} 
+\end{align*}
+\begin{itemize}
+  \item because of the penalty term ``best'' in-sample fit is costly
+  \begin{itemize}
+    \item reduces \emph{overfitting}
+  \end{itemize}
+  \item cost of choosing ``large'' coefficients $\Rightarrow$ \emph{shrinkage}
+  \item choice of $q$ = choice of $\lambda \mapsto \mathcal{F}_{\lambda}$
+\end{itemize}
+\begin{description}
+\item[q = 2] Ridge regression
+\item[q = 1] Lasso regression (Least absolute shrinkage and selection estimator, \cite{tibshirani1996regression})
+\end{description}
+\end{frame}
+
+
+\begin{frame}{Intuition of how shrinkage improves prediction}
+Intercept is not penalized: we will always have (verify!)
+\begin{align*}
+\hat{\beta}_0^{L_q, \lambda} = \bar{y} - \bar{x}'\hat{\beta}_1^{L_p, \lambda} 
+\end{align*}
+Predictors of $y$
+\begin{align*}
+  \E [y] \qquad \text{or} \qquad \E[y \mid x]
+\end{align*}
+\pause 
+\begin{description}
+\item[$\lambda \to \infty$] $\lVert \hat{\beta}_1^{L_p, \lambda} - 0 \rVert_q \to 0 $ $\Rightarrow$ estimate $\E[y]$
+\item[$\lambda \to 0$] $\lVert \hat{\beta}_1^{L_p, \lambda} - \hat{\beta}_1^{\text{ols}} \rVert_q \to 0 $ $\Rightarrow$ estimate $\E[y \mid x]$
+\end{description}
+\begin{itemize}
+  \item $L_q$-penalized regression ``shrinks'' towards the unconditional mean
+  \item ``shrink'' towards a model that is not complex (=unconditional mean)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Choice of $\lambda$}
+\begin{itemize}
+\item the regularization parameter $\lambda$ is a \emph{tuning parameter}
+\item chosen by the empirical researcher
+\item choose $\lambda$ to maximize out-of-sample predictive power (we focus on prediction for now) 
+\begin{itemize}
+  \item independent validation sample 
+  \item $k$-fold cross-validation
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Simulation study}
+\begin{itemize}
+  \item all code is on \url{https://github.com/adzemski/ML_notes}
+  \item sample size $n = 100$
+  \item number of regressors $p_n = 50$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/dense_plot_coefficients.pdf}
+   \caption{True values of coefficients}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/dense_plot_coef_once.pdf}
+   \caption{Estimation results}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/dense_plot_mean.pdf}
+   \caption{Expected estimates (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{OLS is terrible for prediction}
+\begin{table}
+  \input{../../R_code/penalized_regression/output_for_slides/dense_mse_table.tex}
+  \caption{Mean-squared-error $MSE(f)$}
+\end{table}
+\begin{itemize}
+  \item Not surprising that Ridge performs best (James-Stein estimator, Empirical Bayes theory)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Variable selection}
+\begin{itemize}
+  \item an estimator $\hat{\beta}$ selects a variable $x_j$ if $\lvert \hat{\beta}_j \rvert \neq 0$
+  \item variable selection = model selection
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Lasso selects variables}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/dense_plot_included.pdf}
+   \caption{Probability of including variables (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Instability of variable selection}
+\begin{itemize}
+  \item is it a problem for prediction?
+  \item for interpretation?
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Understanding variable selection by the Lasso}
+for $p_n = 2$ we solve 
+\begin{align*}
+  \min_{\beta} \lVert \mathbf{y} - \beta_0 - \mathbf{x}_1\beta_1 - \mathbf{x}_2\beta_2 \Vert_2^2
+  \\
+  \text{s.t.} \begin{cases}
+    \lvert\beta_1\rvert^2 + \lvert \beta_2\rvert^2 \leq s & \text{if method = ridge}
+  \\
+    \lvert \beta_1\vert + \lvert \beta_2 \rvert \leq s & \text{if method = lasso}
+  \end{cases}
+\end{align*}
+\begin{itemize}
+  \item why?
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Contour sets of the loss function}    
+\begin{itemize}
+  \item 
+  $\mathbf{X}_{+1}$ = design matrix including intercept ($n \times (1 + p_n)$)
+  \item 
+  $\hat{\beta}^{\text{ols}}$ = OLS estimator including intercept
+\end{itemize}
+contour sets 
+\begin{align*}
+\big\{
+  \beta \in \mathbb{R}^{p_n + 1} : \lVert \mathbf{y} - \mathbf{X}_{+1} \beta \rVert_2^2 = c 
+\big\}
+\end{align*}
+are empty or ellipsoids centered at $\hat{\beta}^{\text{ols}}$ (verify!)
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \includegraphics[width = 0.8\textwidth]{../screen_shots/ESL_fig_3_11.pdf}
+   \caption{Figure~3.11 from \textcite{hastie2009elements}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Series estimation \parencite{newey1997convergence}}
+\begin{itemize}
+  \item estimating a smooth regression curve $f: \mathbb{R} \to \mathbb{R}$
+  \item Taylor expansion 
+  \begin{align*}
+    f(x) =& f(0) + f'(0)x + \frac{1}{2} f''(0) x^2 + r(x)
+  \\
+    =& \underbrace{b_0(x) + b_1(x) + b_{3}(x)}_{\text{approximation by $p_n = 3$ series terms}} + \underbrace{r(x)}_{\text{``small'' remainder}}
+  \end{align*}
+  \item justification as non-parameteric technique
+  \begin{itemize}
+    \item 
+    $p_n \to \infty$ asymptotics
+  \end{itemize}
+  \item may make sense to choose orthogonal basis functions
+  \begin{itemize}
+    \item e.g. Legendre polynomials, Fourier basis
+  \end{itemize}
+  \item generalization
+  \begin{itemize}
+    \item non-smooth functions 
+    \item multi-variate functions
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{High-dimensional regression vs. non-parametric regression}
+\begin{quote}
+  ``We differ from most of the existing literature that considers $p \ll n$ series terms by allowing $p \gg n$ series terms from which we select $s \ll n$ terms to construct the regression fits. Considering an initial broad set of terms allows for more refined approximations of regression functions relative to the usual approach that uses only a few \textbf{low-order} [my emphasis] terms.''\parencite{belloni2014inference}
+\end{quote}
+\end{frame}
+
+
+\begin{frame}{A sparse design}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_plot_coefficients.pdf}
+   \caption{True values of coefficients}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Lasso detects many of the zero coefficients}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_uncorr_plot_coef_once.pdf}
+   \caption{Estimation results}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Lasso is good at selecting the true model}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_uncorr_plot_included.pdf}
+   \caption{Probability of including variables (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{But still shrinkage}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_uncorr_plot_mean.pdf}
+   \caption{Expected estimates (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Post-Lasso}
+\begin{itemize}
+  \item Run lasso on all possible variables 
+  \item Select the variable $j$ with $\hat{\beta}_j^{Lasso} \neq 0$
+  \item Run OLS on the selected variable (= post-selection estimator)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Always include a variable}
+\begin{itemize}
+  \item Post-Lasso makes sense if we are interested in the value of the coefficients
+  \item If there is a specific variable of interest we should always select it
+  \item assume $x_1$ = treatment dosage
+  \item Lasso solves 
+  \begin{align*}
+    \min_{\beta} \sum_{i=1}^n \Big(y_i - \beta_0 - \beta_1 x_1 - \sum_{j = 2}^p x_{j, i} \beta_j \Big)^2 + \lambda \sum_{j = 2}^p \lvert\beta\rvert_j   
+  \end{align*}
+  (we don't penalize the intercept and the coefficient on $x_1$)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Penalty matrix}
+Lasso solves 
+  \begin{align*}
+    \min_{\beta} \sum_{i=1}^n \big(y_i - \beta_0 - \beta' x_i \big)^2 + \lambda \lVert \Psi \beta \rVert_1  
+  \end{align*}
+where $\Psi$ is a weight matrix. To exclude the first two coefficients from penalization put
+\begin{align*}
+  \Psi = \diag\big((0, 0, 1, \dotsc, 1)'\big).
+\end{align*}
+\end{frame}
+
+\begin{frame}{Post-Lasso (uncorrelated design)}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_uncorr_post_plot_mean.pdf}
+   \caption{Expected estimates (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{}
+  
+  \begin{itemize}
+    \item 
+    Why does the post-Lasso \emph{on average} under-estimate the true values?
+    \item Trying to reverse shrinkage has adverse effect on MSE:  
+    \begin{table}
+    \input{../../R_code/penalized_regression/output_for_slides/sparse_uncorr_post_mse_table.tex}
+      \caption{Mean-squared-error $MSE(\hat{f})$}
+    \end{table}
+    \item 
+    Is post-lasso estimator $\hat{\beta}_1^{\text{post}}$ a better estimator than $\hat{\beta}_1^{\text{ols}}$? (homework)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Introducing correlation}
+    \begin{itemize}
+      \item In uncorrelated design post selection estimator seems to ``work''
+      \item now introduce correlation: $\cor(x_1, x_2) = 0.95$, all other variables uncorrelated
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Post-Lasso (correlated design)}
+\begin{figure}
+  \includegraphics[]{../../R_code/penalized_regression/output_for_slides/sparse_corr_post_plot_mean.pdf}
+   \caption{Expected estimates (average over 200 simulations)}
+\end{figure}
+\end{frame}
+
+\begin{frame}{What happened?}
+\begin{itemize}
+  \item bias of estimated treatment effect = almost 200\% of true effect
+\end{itemize}
+\end{frame}
+
+\begin{frame}{``Double'' selection procedure \parencite{belloni2014inference}}
+\begin{itemize}
+  \item intuition: detect variables that are highly correlated with $x_1$ and make sure they are always selected
+  \item model: based on standard model for ``regression type'' treatment evaluation model under unconfoundedness
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Double selection algorithm}
+outcome equation:
+\begin{align*}
+  y_i = \alpha_{g, 0} + \alpha_1 x_{1,i} + \beta_{g0}' x_{-1, i} + r_{g, i} + \zeta_i
+\end{align*}
+selection equation: 
+\begin{align*}
+  x_{1, i} = \alpha_{m, 0} + \beta_{m0}' x_{-1, i} + r_{m, i} + \nu_i
+\end{align*}
+\begin{enumerate}
+  \item variables selected from $x_{-1, i}$ by running Lasso on \emph{outcome} equation = $\hat{I}_1$
+  \item variables selected from $x_{-1, i}$ by running Lasso on \emph{selection} equation = $\hat{I}_2$
+  \item run post-Lasso on $\hat{I}_1 \cup \hat{I}_2$
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Sparsity assumption}
+outcome equation:
+\begin{align*}
+  y_i = \alpha_{g, 0} + \alpha_1 x_{1,i} + \beta_{g0}' x_{-1, i} + r_{g, i} + \zeta_i
+\end{align*}
+selection equation: 
+\begin{align*}
+  x_{1, i} = \alpha_{m, 0} + \beta_{m0}' x_{-1, i} + r_{m, i} + \nu_i
+\end{align*}
+sparsity of linear component: 
+\begin{align*}
+  \lVert \beta_{m0} \rVert_0 \leq s_n \quad \text{and} \quad \lVert \beta_{g0} \rVert_0 \leq s_n,
+\end{align*}
+where 
+\begin{align*}
+  \lVert \beta \rVert_0 = \sum_{j = 1}^{p_n} \mathbf{1}(\beta_j \neq 0)
+\end{align*}
+\end{frame}
+
+
+\begin{frame}{Sparsity assumption}
+size of remainder (= approximation error): 
+\begin{align*}
+  \left(\frac{1}{n} \sum_{i=1}^n \E{} r_{gi}^2\right)^{1/2} \leq \sqrt{\frac{s_n}{n}} 
+  \quad \text{and} \quad 
+  \left(\frac{1}{n} \sum_{i=1}^n \E{} r_{mi}^2\right)^{1/2} \leq \sqrt{\frac{s_n}{n}}
+\end{align*}
+\begin{itemize}
+  \item $s_n$ has to be small enough
+\end{itemize}
+\begin{align*}
+  \frac{s_n^2 \log^2 (n \vee p_n)}{n} = o(1) 
+\end{align*}
+
+\end{frame}
+
+
+\begin{frame}
+  \begin{itemize}
+    \item Do you expect double selection to fix the ``problem'' in our simulation above?
+    \item Simulate this yourself (homework). 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \includegraphics[width = 0.8\textwidth]{../screen_shots/Belloni_plot_simulations.pdf}
+   \caption{Figure~1 from \textcite{belloni2014inference}}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Endogenous treatment}
+\begin{itemize}
+\item \textcite{belloni2017program}
+\item
+moment condition model
+\item 
+treatment effect $\alpha_1$ is defined via moment condition
+\begin{align*}
+\E_{P} \psi \left(W, \alpha_1, h_0 \right) = 0
+\end{align*}
+\item 
+$h_0$ is a functional-valued nuisance parameter that takes values in a space that is approximated well by a ``sparse'' function space
+\begin{itemize}
+  \item ``sparse'' = not too complex = entropy is not too large
+\end{itemize}
+\item
+the setting in \textcite{belloni2014inference} is a special case (show this!)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+  \item the approach in \textcite{belloni2014inference} requires sparse model for selection equation 
+  \item is \emph{not} robust to misspecification of selection equation (propensity score)
+  \item \emph{rebalancing methods} are often robust to misspecification of propensity score \parencite{robins1997toward}
+  \item examples of rebalancing methods
+  \begin{itemize}
+    \item inverse probability weighting \parencite{cassel1976some,robins1986new}
+    \item inverse probability tilting \parencite{graham2012inverse}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\textcite{athey2018approximate}}
+\begin{itemize}
+  \item treatment effect on the treated $\tau$
+  \item combine regression and rebalancing techniques
+  \item $w$ = binary treatment indicator
+  \item $x$ = control variables ($p_n$-vector)
+  \item $y$ = outcome variable
+  \item outcome model 
+  \begin{align*}
+    y_i = \begin{cases}
+      \beta_{c}'x_i + \epsilon_i & \text{if $w_i = 0$}
+    \\
+       w_i y_i & \text{if $w_i = 1$}
+    \end{cases}
+  \end{align*}
+  \item 
+  $\beta_{c}$ is sparse
+  \begin{align*}
+    \lVert \beta_c \rVert_0 \leq s_n 
+    \quad \text{and} \quad \frac{s_n \log(p_n)}{n} = o(1)
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{A regression approach}
+\begin{itemize}
+  \item $n_t = \sum_{\{i: w_i = 1\}} 1$
+  \item $n_c = \sum_{\{i: w_i = 0\}} 1$
+  \item $\bar{x}_t = \sum_{\{i: w_i = 1\}} x_i / n_t$
+  \item $\bar{y}_t = \sum_{\{i: w_i = 1\}} y_i / n_t$
+\end{itemize}
+\begin{align*}
+  \hat{\tau} = \bar{y}_t - \bar{x}_t'\hat{\beta}_{c}
+\end{align*}
+\begin{itemize}
+  \item \textcite{belloni2014inference} show that $\hat{\beta}_c$ = post-single-selection estimator does not work well (OV bias)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{A balancing approach}
+balancing estimator 
+\begin{align*}
+  \hat{\tau} = \bar{y}_t - \sum_{\{i:w_i = 0\}} \hat{\gamma}_i y_i
+\end{align*}
+\begin{itemize}
+  \item $\{\hat{\gamma}_i\}_{i: w_i = 0}$ weight sequence that re-weighs covariates in control group so that the covariate distribution in control group ``looks like'' covariate distribution in treatment group
+  \begin{align*}
+    \sum_{i: w_i = 0} \hat{\gamma}_i = 1 
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Choice of weights}
+\begin{itemize}
+  \item $\hat{e}(x_i)$ = estimator of propensity score
+  \item inverse probability weighting
+  \begin{align*}
+    \hat{\gamma}_i \propto \frac{\hat{e}(x_i)}{1 - \hat{e}(x_i)}
+  \end{align*}
+  \item does not enforce exact balance
+  \item in finite dimensions: does not achieve the semi-parametric efficiency bound \parencite{graham2012inverse}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Intuition for robustness of re-balancing}
+\begin{quote}
+ ``\dots in a linear model, the bias for estimators based on weighted averaging depends solely on $\bar{x}_t - \sum_{\{i:w_i = 0\}} \hat{\gamma}_i x_i$. Therefore, getting the propensity model exactly right is less important than accurately matching the moments of $\bar{x}_t$. In high dimensions, however, exact re-balancing weights do not in general exist.'' \parencite{athey2018approximate}
+\end{quote}
+\end{frame}
+
+\begin{frame}{Approximate residual balancing}
+\begin{align*}
+  \hat{\tau} = \bar{y}_t - \bar{x}_t \hat{\beta}_c - \overbrace{\sum_{\{i: w_i = 0\}} \hat{\gamma}_i \underbrace{\big(y_i - x_i \hat{\beta}_c\big)}_{\text{average over this = bias in control group}}}^{\text{approximate OV bias in treatment group}}
+\end{align*}
+\begin{itemize}
+  \item $\{\hat{\gamma}_i\}_{i: w_i = 0}$ ``approximately'' balances treatment and control group
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Estimator $\hat{\beta}_c$}
+\begin{itemize}
+  \item Lasso estimator
+\end{itemize}
+\begin{align*}
+  \hat{\beta}_c = \argmin_{\beta} \left\{
+    \sum_{i: w_i = 0} (y_i - x_i ' \beta)^2 + \lambda \lVert \beta \rVert_1
+  \right\}
+\end{align*}
+\begin{itemize}
+  \item selection is based \emph{only on the outcome equation}
+  \item Lasso estimator, not post-Lasso (why?)
+  \item tuning parameter $\lambda$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Weight estimation}
+\begin{itemize}
+  \item $\mathbf{X}_c$ = design matrix in control group $(n \times p_n)$
+\end{itemize}
+weight estimation
+\begin{align*}
+  \hat{\gamma} = \arg \min_{\gamma \in \mathbb{R}^{n_c}} 
+  \Big\{ &
+    \zeta \max_{j = 1, \dotsc, p_n} (\bar{x}_t - \mathbf{X}_c' \gamma)^2 + (1 - \zeta) \lVert  \gamma \rVert_2^2
+  \\
+    & \text{ s.t. } \sum_{i : w_i = 0} \gamma_i = 1 \text{ and } 0 \leq \gamma_i \leq n_c^{-2/3}
+  \Big\}
+\end{align*}
+\begin{itemize}
+  \item tuning parameter $\zeta$
+\end{itemize}
+\end{frame}
+
+\appendix
+
+\end{document}

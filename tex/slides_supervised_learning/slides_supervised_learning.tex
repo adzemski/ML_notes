@@ -1,0 +1,369 @@
+\documentclass[xcolor=dvipsnames]{beamer}
+
+\usepackage[]{graphicx}
+\usepackage[]{color}
+
+\usetheme{Singapore}
+\setbeamertemplate{itemize subitem}[triangle]
+
+% for handout version (uncomment to get handout)
+\usepackage{pgfpages}
+%\pgfpagesuselayout{2 on 1}[a4paper,border shrink=2mm]
+
+% \usepackage{tabularx}
+% \usepackage{caption}
+\usepackage{booktabs}
+\usepackage{colortbl, xcolor}
+% \usepackage{comment}
+% \setbeamertemplate{theorems}[numbered]
+
+% bibliography
+\usepackage[backend = biber, style = authoryear]{biblatex}
+\addbibresource{../ML_course.bib}
+
+\usepackage{amssymb, amsmath, amsthm, bm, mathtools}
+\usepackage{graphicx}
+
+% for some graphs
+\usepackage{tabularx}
+% \usepackage{tikz, xcolor}
+% \usetikzlibrary{patterns, shapes, backgrounds, positioning, arrows}
+%\usepackage{gnuplot-lua-tikz}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newtheorem{proposition}{Proposition}
+
+\author[Dzemski]{Andreas Dzemski\inst{1}}
+\institute{\inst{1} University of Gothenburg}
+\title{Mini-course Machine Learning in Empirical Economic Research}
+\subtitle{Lecture 2: Introduction to supervised learning}
+\date{\today}
+%
+\renewcommand*{\bibfont}{\scriptsize}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\makebox[1em][l]{\ding{51}}}%
+\newcommand{\xmark}{\makebox[1em][l]{\ding{55}}}%
+
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\diag}{Diag}
+\DeclareMathOperator{\cor}{cor}
+\DeclareMathOperator{\argmin}{arg\,min}
+%
+%
+%
+\begin{document}
+\maketitle
+
+\begin{frame}{Supervised learning}
+\begin{itemize}
+    \item outcome $y$, regressors/features $x$
+    \item $f(x)$ prediction of $y$ using prediction rule $f$
+    \item loss function $L\left(y, f(x))\right)$
+    \item quadratic loss
+    \begin{align*}
+      L\left(y, f(x)\right) =  \left(y - f(x) \right)^2 
+    \end{align*}
+    \item function class $\mathcal{F}$ of possible $f$
+    \item subclasses $\mathcal{F}_{\lambda} \subset \mathcal{F}$
+    \item $\lambda$ = tuning parameter
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}{Machine learning as data-driven model selection}
+\begin{columns}[t, onlytextwidth]
+    \column{.47\textwidth}
+        \begin{block}{``Traditional'' econometrics}
+        \begin{itemize}
+          \item 
+          specify $\mathcal{F}$
+          \item 
+          $\mathcal{F}$ is typically very ``small''
+          \item 
+          fit ``best'' $f \in \mathcal{F}$
+        \end{itemize}
+        \end{block}
+    \column{.47\textwidth}
+        \begin{block}{Machine Learning}
+        \begin{itemize}
+          \item 
+          specify $\mathcal{F}$ and $\lambda \mapsto \mathcal{F}_{\lambda}$
+          \item 
+          $\mathcal{F}$ is typically ``large''
+          \item 
+          use data to determine a ``good'' $\hat{\lambda}$
+          \item
+          typically $\mathcal{F}_{\hat{\lambda}}$ is ``small'' or at least well-behaved
+          \item 
+          fit ``best'' $f \in \mathcal{F}_{\hat{\lambda}}$
+        \end{itemize}
+      \end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Fitting $f \in \mathcal{F}_{\lambda}$}
+\begin{itemize}
+  \item training data $\mathcal{T} = \{ (y_i, x_i') \}_{i=1}^n$
+  \item \emph{training error} = average loss on $\mathcal{T}$
+  \begin{align*}
+     \overline{\text{err}} (f) = \frac{1}{n} \sum_{i=1}^n L\left(y_i, f(x_i) \right) 
+   \end{align*} 
+   \item fit $f$ with minimal training error
+   \begin{align*}
+     \hat{f} = \hat{f}^{\lambda} = \argmin_{f \in \mathcal{F}^{\lambda}} \overline{\text{err}} (f) 
+   \end{align*}
+   \item conceptually this is the same as what we do in econometrics! 
+   \begin{itemize}
+     \item what loss functions do we use in econometrics?
+     \item estimation as constrained optimization?
+   \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Intuition for $\lambda$}
+\begin{itemize}
+  \item assume $\lambda \in \mathbb{R}$
+  \item often $\lambda$ performs \emph{regularization}
+  \item let $\mathcal{C}(f)$ measure ``complexity'' of $f$
+  \begin{align*}
+    \mathcal{F}_{\lambda}(f) = \left\{f \in \mathcal{F} : \mathcal{C}(f) \leq \lambda \right\}   
+  \end{align*} 
+  \item example: fitting a smooth curve over an interval
+  \begin{align*}
+    \mathcal{C}(f) = \int_{x \in [a,b]} \lvert f''(x) \rvert^2 \, dx
+  \end{align*}
+  \item implies nesting of classes: for $\lambda_1 \leq \lambda_2 \leq \dotsb$
+  \begin{align*}
+    \mathcal{F}_{\lambda_1}\subset \mathcal{F}_{\lambda_2} \subset \dotsb
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Choice of $\lambda$ = trade-off}
+\begin{columns}[t, onlytextwidth]
+    \column{.47\textwidth}
+        \begin{block}{small $\lambda$}
+        \begin{itemize}
+          \item 
+          small $\mathcal{F}_{\lambda}$
+          \item 
+          consisting of ``simple'' models
+          \item 
+          potentially poor approximation (high bias)
+          \item 
+          easy to estimate (low variance)
+        \end{itemize}
+        \end{block}
+    \column{.47\textwidth}
+        \begin{block}{large $\lambda$}
+        \begin{itemize}
+          \item 
+          large $\mathcal{F}_{\lambda}$
+          \item 
+          consisting of ``complex'' models
+          \item 
+          potentially better approximation (low bias)
+          \item 
+          hard to estimate (high variance)
+        \end{itemize}
+      \end{block}
+\end{columns}
+\begin{itemize}
+  \item we order models according to the ``Occam's razor'' principle 
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Determining $\hat{\lambda}$}
+\begin{itemize}
+  \item our objective = prediction
+  \item good $\lambda$ leads to estimator with good predictive properties
+  \item $\E_{\mathcal{T}}$ = expectation operator wrt training sample
+  \item $E_{y,x}$ = integral wrt probability measure of a new $(y, x')$ observation  
+  \item expected prediction error
+  \begin{align*}
+    EPE(\hat{f}^{\lambda}) = \E_{\mathcal{T}} E_{y,x} L\left(y, \hat{f}^{\lambda}(x) \right)
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Training error does not estimate prediction error}
+\begin{figure}
+  \includegraphics[width = 0.8\textwidth]{../screen_shots/ESL_fig_2_11.pdf}
+   \caption{Figure~2.11 from \textcite{hastie2009elements}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Overfitting}
+\begin{itemize}
+  \item minimizing training error $\overline{\text{err}} (f)$ over all of $\mathcal{F}$ leads to \emph{overfitting}
+  \item $\overline{\text{err}} (f)$ is an \emph{optimistic} estimate of prediction error
+  \begin{itemize}
+    \item the training error does not account for cost of uncertainty (variance)
+  \end{itemize}
+\pause
+  \item Two lessons: 
+  \begin{itemize}
+    \item estimation: fit $\overline{\text{err}} (f)$ keeping $\lambda$ fixed
+    \item model testing: in-sample fit (aka $\overline{\text{err}}$ or $R^2$) is not a good measurement of fit
+    \begin{itemize}
+      \item even if you are interested in predictive power don't look at $R^2$!
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{How do we validate fit in empirical economic research?}
+\begin{quote}
+``For many years, economists have reported in-sample goodness-of-fit measures using the excuse that we had small datasets. But now that larger datasets have become available, there is no reason not to use separate training and testing sets.'' \parencite{varian2014big}
+\end{quote}
+\end{frame}
+
+
+\begin{frame}{Sample-splits in data-rich environments}
+Use independent samples for three distinct tasks: 
+\begin{description}
+\item[Training] fit $f \in \mathcal{F}_{\lambda}$
+\item[Validation] estimate EPE for given $\hat{f}^{\lambda}$
+\item[Test] estimate predictive power of final model $\hat{f}^{\hat{\lambda}}$
+\end{description}
+\end{frame}
+
+\begin{frame}{Estimating EPE from independent validation data set}
+Validation data set 
+\begin{align*}
+  \{(y^*_i, (x_i^*)')\}_{i=1}^{n^*}
+\end{align*}
+Estimated $EPE$
+\begin{align*}
+  \widehat{EPE}\left(f\right) = \frac{1}{n^*} \sum_{i=1}^{n^*} L\left(y_i, f(x^*_i)\right)   
+\end{align*}
+\begin{itemize}
+  \item $\widehat{EPE}\big(\hat{f}^{\lambda}\big)$ estimates the \emph{conditional} expected prediction error
+  \begin{align*}
+    EPE_{\mathcal{T}} \big(\hat{f}^{\lambda}\big) = E_{y, x} L \big(y, \hat{f}^{\lambda}(x) \big)
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Estimating EPE using cross-validation}
+\begin{itemize}
+  \item no need for validation data set
+  \item $k$-fold cross-validation (CV) based on sample split \emph{of the training sample}
+  \item example with $k=5$ folds
+  \begin{figure}
+  \includegraphics[width = 0.8\textwidth]{../screen_shots/ESL_fig_p242.pdf}
+   \caption{Figure from p242 of \textcite{hastie2009elements}}
+\end{figure}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{$k$-fold cross-validation}
+Random partition
+\begin{align*}
+\bigcup_{j = 1}^k \kappa_j = \{1, \dotsc, n\}
+\end{align*}
+$\hat{f}^{\lambda}_{-\kappa_j}$ = fit $f \in \mathcal{F}_{\lambda}$ on subsample 
+\begin{align*}
+  \{1, \dotsc, n\} \setminus \kappa_j
+\end{align*}
+evaluate $\hat{f}_{-\kappa_j}$ on $\kappa_j$
+\begin{align*}
+  CV_k(\lambda) = \frac{1}{\lvert\kappa_j\rvert} \sum_{i \in \kappa_j} L\big(\hat{f}^{\lambda}_{-\kappa_j}(x_i), y_i \big)
+\end{align*}
+\end{frame}
+
+\begin{frame}{$k$-fold cross-validation}
+Average over partitions
+\begin{align*}
+  CV(\lambda) = \frac{1}{k} \sum_{j=1}^k CV_j(\lambda)
+\end{align*}
+\begin{itemize}
+  \item $CV(\lambda)$ is an estimate of the \emph{unconditional} expected prediction error
+    \begin{align*}
+    EPE \big(\hat{f}^{\lambda}\big) = \E_{\mathcal{T}} E_{y, x} L \big(\hat{f}^{\lambda}(x), y \big)
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Standard error of cross-validation}
+\begin{align*}
+  SE_{CV}(\lambda) =& \text{sample std of $\{CV_j(\lambda)\}_{j=1}^k$}/{\sqrt{k}}
+\\
+  =& \sqrt{\frac{1}{k} \sum_{j=1}^k\left( CV_j(\lambda) - CV(\lambda)\right)^2}/\sqrt{k}
+\end{align*}
+\begin{itemize}
+  \item ad-hoc measure of the ``sampling error'' of cross-validation
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Choice of number of folds}
+\begin{itemize}
+  \item typically values $k = 5, 10, n-1$
+  \item $k = n-1$: leave-one-out cross-validation
+\end{itemize}
+\begin{columns}[t, onlytextwidth]
+    \column{.47\textwidth}
+        \begin{block}{few folds}
+        \begin{itemize}
+          \item 
+          training step in CV uses \emph{much less} observations than $n$
+          \item 
+          biased
+          \item 
+          low variance (training sets not very similar)
+        \end{itemize}
+        \end{block}
+    \column{.47\textwidth}
+        \begin{block}{leave-one-out}
+        \begin{itemize}
+          \item 
+          training step in CV almost $n$ observations
+          \item 
+          approximately unbiased
+          \item 
+          high variance (training sets very similar)        
+        \end{itemize}
+      \end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Example}
+  \begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/cv_example_lambda_path.pdf}
+   \caption{Cross-validation $CV(\lambda)$, $k = 10$ folds}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Choice of $\lambda$ based on CV}
+minimizing $\lambda$
+\begin{align*}
+  \hat{\lambda} = \hat{\lambda}_{\min} = \argmin_{\lambda} CV(\lambda)
+\end{align*}
+\begin{itemize}
+  \item optimize $\lambda$ for prediction
+\end{itemize}
+1-$\sigma$ rule
+\begin{align*}
+  \hat{\lambda} = \hat{\lambda}_{1\sigma} = \max \{\lambda \in \mathbb{R} : CV(\lambda) \leq CV(\hat{\lambda}_{\min}) +  SE_{CV}(\hat{\lambda}_{\min}) \}
+\end{align*}
+\begin{itemize}
+  \item impose additional regularization
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Example}
+  \begin{figure}
+  \includegraphics{../../R_code/penalized_regression/output_for_slides/cv_example_lambda_choice.pdf}
+   \caption{Optimal choice of $\lambda$, $k = 10$ folds}
+\end{figure}
+\end{frame}
+
+\appendix
+
+\end{document}

@@ -1,0 +1,330 @@
+\documentclass[xcolor=dvipsnames]{beamer}
+
+\usepackage[]{graphicx}
+\usepackage[]{color}
+
+\usetheme{Singapore}
+\setbeamertemplate{itemize subitem}[triangle]
+
+% for handout version (uncomment to get handout)
+\usepackage{pgfpages}
+%\pgfpagesuselayout{2 on 1}[a4paper,border shrink=2mm]
+
+% \usepackage{tabularx}
+% \usepackage{caption}
+\usepackage{booktabs}
+\usepackage{colortbl, xcolor}
+% \usepackage{comment}
+% \setbeamertemplate{theorems}[numbered]
+
+% bibliography
+\usepackage[backend = biber, style = authoryear]{biblatex}
+\addbibresource{../ML_course.bib}
+
+\usepackage{amssymb, amsmath, amsthm, bm, mathtools}
+\usepackage{graphicx}
+
+% for some graphs
+\usepackage{tabularx}
+% \usepackage{tikz, xcolor}
+% \usetikzlibrary{patterns, shapes, backgrounds, positioning, arrows}
+%\usepackage{gnuplot-lua-tikz}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newtheorem{proposition}{Proposition}
+
+\author[Dzemski]{Andreas Dzemski\inst{1}}
+\institute{\inst{1} University of Gothenburg}
+\title{Mini-course Machine Learning in Empirical Economic Research}
+\date{\today}
+\subtitle{Lecture~1: Introduction}
+%
+\renewcommand*{\bibfont}{\scriptsize}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\makebox[1em][l]{\ding{51}}}%
+\newcommand{\xmark}{\makebox[1em][l]{\ding{55}}}%
+
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\diag}{Diag}
+\DeclareMathOperator{\cor}{cor}
+\DeclareMathOperator{\argmin}{arg\,min}
+%
+%
+%
+\begin{document}
+\maketitle
+
+\begin{frame}{What is econometrics}
+\pause
+\begin{itemize}
+  \item structural function
+  \begin{align*}
+    g(x_1, x_2)
+  \end{align*}
+  \item used to express an economic idea
+  \begin{align*}
+    \text{wage gap} = \int \left(g(1, x_2) - g(0, x_2)\right) \, dF(x_2)
+  \end{align*}
+  \item often a \emph{counterfactual}
+  \item structural empirical model
+  \begin{align*}
+    y = g(x_1, x_2) + \epsilon
+  \end{align*}
+  \item links structural function to data
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What is econometrics?}
+  \begin{itemize}
+    \item identifying assumptions
+      \begin{align*}
+        y = \underbrace{g(x_1, x_2)}_{\text{rank assumption}} \overbrace{+}^{\text{separability}} \underbrace{\epsilon}_{\text{exogeneity}}
+      \end{align*}
+    \item estimation: functional form assumptions about $g$
+    \item an incorrect model is properly not very useful
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{What is machine learning?}
+\pause
+\begin{itemize}
+  \item supervised learning
+  \item unsupervised learning
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Ways to think about machine learning}
+\begin{enumerate}
+  \item
+  statistical tools for prediction
+  \item 
+  methods for ``high-dimensional'' data
+  \begin{itemize}
+    \item everything is data!
+  \end{itemize}
+  \item 
+  methods to fit flexible, non-smooth functional forms 
+  \begin{itemize}
+    \item regression trees, random trees/forests, neural networks
+  \end{itemize}
+  \item 
+  data-driven model selection
+  \item 
+  often targeted toward data-rich environments (?)
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}{Focus on prediction}
+\begin{quote}
+``[\dots] few assumptions are required for off-the-shelf prediction techniques to work: The environment must be stable, and the units whose behavior is being studied should not interact or ``interfere'' with one another. In many applications, SML [supervised machine learning] techniques can be successfully applied by data scientists with little knowledge of the problem domain.'' \parencite{athey2017beyond}
+\end{quote}
+\end{frame}
+
+\begin{frame}{Focus on prediction}
+\begin{itemize}
+  \item ``wrong'' models may be very useful!
+  \item for prediction we check the predictive properties of our model on ``new'' data
+  \item more generally: supervised learning works well if we can formulate a loss function
+  \begin{itemize}
+    \item criterion that tells us, using only observable data, how good our model is
+  \end{itemize}
+  \item loss function for causal relationship?
+\end{itemize}
+\end{frame}
+
+\begin{frame}{But: Causal inference requires predictive tasks}
+non-parametric IV model \parencite{newey2003instrumental}
+\begin{align*}
+  y = g(x) + \epsilon
+\end{align*}
+instrumental variable $z$ 
+\begin{align*}
+  \E[\epsilon \mid z] = 0
+\end{align*}
+\end{frame}
+
+
+\begin{frame}{Identification of $g$ in IV model}
+identification from \emph{Fredholm integral equation}
+\begin{align*}
+  \underbrace{\E[y \mid z]}_{\text{identified}} = \int g(x) \, \underbrace{dF(x \mid z)}_{\text{identified}}
+\end{align*}
+\begin{itemize}
+  \item estimation of $\E[y \mid z]$ and $F(x \mid z)$ are prediction problems (why?)
+  \item then, recovering $g$ is a deconvolution problem
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{``DeepIV'' approach by \textcite{hartford2017deep}}
+\begin{itemize}
+  \item first-stage estimator $\hat{F}(\cdot \mid \cdot)$
+  \item formulate deconvolution as a supervised learning problem
+  \item loss function
+  \begin{align*}
+    L(g) = \frac{1}{n} \sum_{i=1}^n \Big\{
+      y_i - \int g(x) \, dF(x \mid z_i)
+    \Big\}^2 
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Other prediction tasks in empirical economics}
+\begin{itemize}
+  \item 
+  prediction may be a way to address the research question
+  \begin{itemize}
+    \item predictability of bankruptcy \parencite{becerra2005neural}
+    \item predictability of volatility from public statements \parencite{kogan2009predicting}
+  \end{itemize}
+  \item 
+  imputation of variables
+\end{itemize}
+\pause
+\begin{quote}
+The estimation of the treatment effect on the treated requires only predicting the control outcome of the treated. 
+This task is a supervised learning problem.
+\end{quote}
+\begin{itemize}
+  \item Do you agree with this statement?
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{High-dimensional data}
+\begin{itemize}
+  \item many ``features'' are considered for prediction
+  \item consider many economic variables 
+  \begin{itemize}
+    \item examples: detailed census data, social network activity
+  \end{itemize}
+  \item uncertainty about functional form 
+  \begin{itemize}
+    \item consider many transformations/interactions of small set of economic variables
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Everything is data}
+\begin{itemize}
+  \item images 
+  \item texts 
+  \item social media usage 
+  \item pre-processing step converts these into \emph{high-dimensional} datasets
+  \item \emph{unsupervised learning} in pre-processing  
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Estimating poverty from satellite images}
+\begin{figure}
+  \includegraphics[width = 0.7\textwidth]{../screen_shots/Jean_et_al_fig2.pdf}
+   \caption{Source: \textcite{jean2016combining}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Estimating partisan slant in newspapers}
+\begin{figure}
+  \includegraphics[width = 0.7\textwidth]{../screen_shots/Gentzkow_Shapiro_2010_phrases.pdf}
+   \caption{Source: \textcite{gentzkow2010drives}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Predicting wealth from mobile phone logs}
+\begin{figure}
+  \includegraphics[width = 0.8\textwidth]{../screen_shots/Blumenstock_predicting_wealth.pdf}
+   \caption{Source: \textcite{blumenstock2015predicting}}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}{Impressive results in data-rich environments}
+\begin{itemize}
+  \item 
+  predicting related products in a large online shop (customers are continuously creating new data through "clicks")
+  \item 
+  predicting viewing behavior on Netflix
+  \item 
+  \pause
+  Prediction tasks in AI: teaching a robot how to walk, teach an AI to play a video game 
+\end{itemize}
+\begin{quote}
+``The total playing time between humans and the AI equated to 10.7 years, which is impressive until you learn that OpenAI Five generates this much data every 12 minutes of training by playing against itself'' (The Verge, 2019-04-23)
+\end{quote}
+\end{frame}
+
+
+\begin{frame}{Goal of this course: Have this makes sense to you}
+\begin{figure}
+  \includegraphics[width = 0.5\textwidth]{../screen_shots/xkcd_ML.png}
+   \caption{Source: https://xkcd.com/1838/}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Tools for machine learning}
+\begin{itemize}
+  \item implement machine learning methods (train and evaluate)
+  \item data scraping and handling 
+  \item distributed computing 
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Programming languages for ML}
+\begin{itemize}
+  \item a lot of ``standard'' methods are implemented in Stata
+  \begin{itemize}
+    \item the usual caveat applies 
+  \end{itemize}
+  \item Python or R if you want to get real
+  \begin{itemize}
+    \item don't share Stata's caveat
+    \item extensive library support (e.g. caret for R, scikit-learn for Python)
+    \item free and pre-installed on many clusters
+    \item easy file system and string manipulation 
+  \end{itemize}
+  \item libraries with bindings to different languages
+  \begin{itemize}
+    \item Google's tensorflow (including R and Python)
+  \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Don't underestimate the power of system admin tools}
+\begin{figure}
+  \includegraphics[width = 0.66\textwidth]{../screen_shots/xkcd_regex.png}
+   \caption{Source: https://xkcd.com/208/}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Computational resources}
+\begin{itemize}
+  \item we can use the Swedish National Infrastructure for Computing (SNIC) 
+  \item Hebbe cluster at Chalmers 
+  \item you have to apply with a project
+  \item batch jobs
+  \item drawback/advantage: have to know basics of
+  \begin{itemize}
+    \item using Linux from the command line
+    \item Bash
+  \end{itemize}
+  \item for sensitive data BIANCA
+\end{itemize}
+\end{frame}
+
+\appendix
+
+\end{document}
