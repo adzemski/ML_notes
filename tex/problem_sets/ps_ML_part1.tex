@@ -53,7 +53,7 @@ The Ridge regressor is given by
 
 \section*{\stepcounter{CounterProblem}Problem~\arabic{CounterProblem}}
 
-The $L_q$ penalized least squares estimator is given by 
+The $L_q$-penalized least squares estimator is given by 
 \begin{align*}
 	\hat{\beta}^{L_q} = \argmin_{\beta_0 \in \mathbb{R}, \beta_1 \in \mathbb{R}^{p_n}} \sum_{i=1}^n \left(y - \beta_0 - x_i'\beta_1\right)^2 + \lambda \lVert \beta_1 \rVert_q^q. 
 \end{align*}
@@ -65,6 +65,7 @@ The $L_q$ penalized least squares estimator is given by
 		\text{subject to:} & \quad  \lVert \beta_1 \rVert_q \leq s_{\lambda}
 	\end{align*}
 	for some $s_{\lambda}$.
+	\item Verify for $L_q$-penalized linear regression that $\mathcal{F}_{\lambda} \subset \mathcal{F}_{\lambda'}$ for $\lambda < \lambda'$. 
 	\item Let $\mathbf{X}_{+1}$ denote the design matrix including intercept ($n \times (p_n + 1)$ matrix). Suppose that $\mathbf{X}_{+1}'\mathbf{X}_{+1}/n$ has full rank. Let $\hat{\beta}^{\text{ols}}$ denote the OLS estimator 
 	\begin{align*}
 		\hat{\beta}^{\text{ols}} = \left(\mathbf{X}_{+1}'\mathbf{X}_{+1} \right)^{-1} \mathbf{X}_{+1}' \mathbf{y}.
@@ -75,12 +76,12 @@ The $L_q$ penalized least squares estimator is given by
 	  		\beta \in \mathbb{R}^{p_n + 1} : \lVert \mathbf{y} - \mathbf{X}_{+1} \beta \rVert_2^2 = c 
 		\big\}
 	\end{align*}
-	are empty or ellipsoids centered at $\hat{\beta}^{\text{ols}}$.
+	indexed by $c \in \mathbb{R}$ are empty or ellipsoids centered at $\hat{\beta}^{\text{ols}}$.
 \end{enumerate}
 
 \section*{\stepcounter{CounterProblem}Problem~\arabic{CounterProblem}}
 
-We consider the the simulation excercise from the slides for the ``sparse uncorrelated'' design. The repository with the simulation code can be found at \url{https://github.com/adzemski/ML_notes}.
+We consider the the simulation excercise from the slides for the ``sparse uncorrelated'' design. The repository with the simulation code used to generate the slides can be found at \url{https://github.com/adzemski/ML_notes}.
 
 \begin{enumerate}
 	\item In the Gaussian case $\hat{\beta}_1^{\text{ols}}$ is the MLE estimator. Explain the efficiency result for MLE estimators (Cram\'er-Rao lower bound). Theoretically, can $\hat{\beta}_1^{\text{post}}$ beat $\hat{\beta}_1^{\text{ols}}$ in terms of efficiency?
@@ -90,6 +91,6 @@ We consider the the simulation excercise from the slides for the ``sparse uncorr
 
 \section*{\stepcounter{CounterProblem}Problem~\arabic{CounterProblem}}
 
-Implement and simulate the double selection procedure from \textcite{belloni2014inference} for the ``sparse correlated'' desgin from the slides. The repository with the simulation code can be found at \url{https://github.com/adzemski/ML_notes}.
+Implement and simulate the double selection procedure from \textcite{belloni2014inference} for the ``sparse correlated'' desgin from the slides. The repository with the simulation code used to generate the slides can be found at \url{https://github.com/adzemski/ML_notes}.
 
 \end{document}
