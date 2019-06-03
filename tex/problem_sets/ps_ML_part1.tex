@@ -21,6 +21,7 @@
 
 \DeclareMathOperator{\argmin}{arg\,min}
 \DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\supp}{supp}
 
 \title{Machine learning in empirical economic research}
 \subtitle{Problem set}
@@ -92,5 +93,109 @@ We consider the the simulation excercise from the slides for the ``sparse uncorr
 \section*{\stepcounter{CounterProblem}Problem~\arabic{CounterProblem}}
 
 Implement and simulate the double selection procedure from \textcite{belloni2014inference} for the ``sparse correlated'' desgin from the slides. The repository with the simulation code used to generate the slides can be found at \url{https://github.com/adzemski/ML_notes}.
+
+\section*{\stepcounter{CounterProblem}Problem~\arabic{CounterProblem}}
+
+This problem reviews estimating treatment effects by reweighting methods. 
+
+Let $x$ denote a covariate vector and let $w$ denote a binary indicator of treatment. 
+Let $y(1)$ and $y(0)$ denote the latent outcomes for the treated and untreated state, respectively. 
+The observed outcome is given by $y = y(1)w + y(0)(1 - w)$.
+We assume 
+\begin{align*}
+	y(0), y(1) \perp w \mid x \qquad \text{unconfoundedness}.
+\end{align*}
+To keep things simple\footnote{We want to be able to use the notion of a density from elementary calculus, rather than dealing with serious measure theory and Lebesgue integration. Our results will not depend on this simplification.} we assume that $x$ is continous with respect to Lebesgue measure. Let $f_x$ denote the unconditional density of $x$ and let $f_{x \mid w = w'}$ denote the conditional density of $x$ when the treatment takes the value $w = w' \in \{0,1\}$. 
+You may assume 
+\begin{align*}
+	\supp(f_{x \mid w = 0}) = \supp(f_{x \mid w = 1}) \qquad \text{overlapping support.}
+\end{align*}
+Let $p^w$ denote the unconditional probability of treatment and let $e_1(x')$ denote the conditional probability of treatment if $x = x'$.
+Let $f(x, w)$ denote the joint density of $x$ and $w$ While this is not a density with respect to Lebesgue measure (what is it?) it still satisfies the equations 
+\begin{align*}
+	f_{x \mid w = 1} = \frac{f(x, 1)}{p^w} = \frac{e(x) f_x(x)}{p^w}
+	\qquad \text{and} \qquad 
+	f_{x \mid w = 0} = \frac{f(x, 0)}{1 - p^w} = \frac{(1 - e(x)) f_x(x)}{1 - p^w}. 
+\end{align*}
+Make sure you understand why these equations hold. Our goal is recovering the \emph{average treatment effect on the treated}
+\begin{align*}
+	ATT = \E \left[y(1) - y(0) \mid w = 1\right].
+\end{align*}
+\begin{enumerate}
+	\item Argue that $E[y(1) \mid w = 1]$ is trivially identified.
+	\item Show that there is a constant $a$ depending only of $p^w$ such that 
+	\begin{align*}
+		\E \left[y(0) \mid w = 1\right] = a \E \left[y \frac{e(x)}{1 - e(x)}\mid w =0 \right].
+	\end{align*}
+	Argue that the expression on the right-hand side is identified up to the value of $a$.
+	\item 
+	Can you relax the overlapping support assumption without changing your argument? \emph{Hint: Your argument relies on existence of a certain Radon-Nikodym derivative.}
+	\item 
+	Show that 
+	\begin{align*}
+		a = \left(\E \left[ \frac{e(x)}{1 - e(x)} \mid w = 0 \right]\right)^{-1}. 
+	\end{align*}
+	\emph{Hint: $1 = \int f_{x \mid w = 1} (x) \, dx$}. 
+	\item Give conditions under which 
+	\begin{align*}
+		\frac{1}{n} \sum_{i: w_i = 0} \frac{e(x_i)}{1 - e(x_i)} 
+		= \E \left[\frac{e(x)}{1 - e(x)} \mid w = 0 \right] + o_p\left( n^{-1/2} \right). 
+	\end{align*}
+	Relate these conditions to restrictions on much mass is assigned to $e(x)$ close to 1.
+	Assume that there is an estimator $\hat{e}$ of the propensity score $e$
+	\begin{align*}
+		\frac{1}{n} \sum_{i: w_i = 0} \frac{\hat{e}(x_i)}{1 - \hat{e}(x_i)} 
+		= \frac{1}{n} \sum_{i: w_i = 0} \frac{e(x_i)}{1 - e(x_i)} 
+		+ o_p\left( n^{-1/2} \right).
+	\end{align*}
+	Use your results above to argue that an estimator of the treatment effect on the treated is given by 
+	\begin{align*}
+		\widehat{ATT} = \frac{1}{n} \sum_{i : w_i = 1} y_i 
+		- \sum_{i: w_i = 0} \hat{\gamma}_i y_i, 
+	\end{align*}
+	where 
+	\begin{align*}
+		\hat{\gamma}_i = \frac{\frac{\hat{e}(x_i)}{1 - \hat{e}(x_i)}}{\sum_{j: w_j = 0} \frac{\hat{e}(x_j)}{1 - \hat{e}(x_j)}}.
+	\end{align*}
+	\item 
+	We now assume a linear model for the untreated outcome, i.e., we assume\footnote{%
+	Here we don't allow an error term. However, assuming $Y(0) = x'\beta^{c} + \epsilon$ with $\E[\epsilon \mid x, w] = 0$ gives similar results.
+	} 
+	\begin{align*}
+		Y(0) = x' \beta^c.
+	\end{align*}
+	We consider a general weight function $\gamma(x)$ and identifying the untreated outcome of the treated by 
+	\begin{align*}
+		\E[y \gamma(x) \mid w = 0]. 
+	\end{align*}
+	For a given weight function $\gamma$, define the estimand 
+	\begin{align*}
+		a(\gamma) = \E[y \mid w = 1] - \E[x \gamma(x) \mid w = 0].
+	\end{align*}
+	Show that the linearity assumption implies
+	\begin{align*}
+		ATT - a(\gamma) = \left(\E[x \gamma(x) \mid w = 0] - \E[x \mid w = 1]\right)'\beta^{c}.
+	\end{align*}
+	Relate this to the claim in \textcite{athey2018approximate}, that the bias of a balancing approach to treatment effect estimation is zero if 
+	\begin{align*}
+		\frac{1}{n} \sum_{i: w_i = 1} x_i - \sum_{i: w_i = 0} x_i \hat{\gamma}_i
+	\end{align*}
+	is zero.
+	\item Now assume that for a smooth (i.e., several times differentiable but not necessarily linear) function $m^c$
+	\begin{align*}
+		y(0) = m^c(x). 	
+	\end{align*} 
+	Can you extend the insights from the linear case to derive conditions for an approximately unbiased balancing estimator for the smooth, non-linear case? 
+	\emph{Hint: Taylor expansion.}
+\end{enumerate}
+
+
+\section*{\stepcounter{CounterProblem}Problem~\arabic{CounterProblem}}
+
+\begin{enumerate}
+	\item What is a \emph{quadratic programming problem}?
+	\item Verify the claim in \textcite{athey2018approximate} that Step~1 of their procedure is a quadratic programming problem.
+\end{enumerate}
+
 
 \end{document}
