@@ -72,6 +72,7 @@
     \text{wage gap} = \int \left(g(1, x_2) - g(0, x_2)\right) \, dF(x_2)
   \end{align*}
   \item often a \emph{counterfactual}
+  \pause
   \item structural empirical model
   \begin{align*}
     y = g(x_1, x_2) + \epsilon
@@ -88,15 +89,44 @@
       \end{align*}
     \item estimation: functional form assumptions about $g$
     \item an incorrect model is properly not very useful
+    \item with a correct model we can do counterfactual analysis
   \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Inference after estimating a structural empirical model}
+example: 
+\begin{itemize}
+  \item 
+  observe
+  \begin{align*}
+    y_i = x_i'\beta + \epsilon_i \qquad \text{for $i = 1, \dotsc, n$}.
+  \end{align*}
+  \item 
+  compute $\hat{\beta}$ from information $\{y_i, x_i\}_{i=1}^n$ 
+  \item 
+  \pause
+  we can use \emph{the same information} to compute measure of uncertainty of $\hat{\beta}$ as an estimator of $\beta$
+  \item why? 
+  \pause 
+  \begin{itemize}
+    \item we assume a lot of structure 
+    \item ``tractability'' of estimator
+  \end{itemize}
+\end{itemize}
 \end{frame}
 
 
 \begin{frame}{What is machine learning?}
 \pause
 \begin{itemize}
-  \item supervised learning
-  \item unsupervised learning
+  \item categories of machine learning problems:
+  \begin{itemize}
+  \item supervised learning: predict observable patterns
+  \item unsupervised learning: reduce dimensionality while preserving heterogeneity
+  \end{itemize}
+  \pause
+  \item where is econometrics?
 \end{itemize}
 \end{frame}
 
@@ -105,20 +135,20 @@
 \begin{enumerate}
   \item
   statistical tools for prediction
-  \item 
-  methods for ``high-dimensional'' data
+  \pause\item 
+  methods for ``high-dimensional'' data (large $p$)
   \begin{itemize}
-    \item everything is data!
+    \pause\item everything is data!
   \end{itemize}
-  \item 
+  \pause\item 
   methods to fit flexible, non-smooth functional forms 
   \begin{itemize}
     \item regression trees, random trees/forests, neural networks
   \end{itemize}
-  \item 
+  \pause\item 
   data-driven model selection
-  \item 
-  often targeted toward data-rich environments (?)
+  \pause\item 
+  often targeted toward data-rich environments (large $n$)
 \end{enumerate}
 \end{frame}
 
@@ -132,8 +162,8 @@
 \begin{frame}{Focus on prediction}
 \begin{itemize}
   \item ``wrong'' models may be very useful!
-  \item for prediction we check the predictive properties of our model on ``new'' data
-  \item more generally: supervised learning works well if we can formulate a loss function
+  \pause\item for prediction we check the predictive properties of our model on ``new'' data
+  \pause\item more generally: supervised learning works well if we can formulate a loss function
   \begin{itemize}
     \item criterion that tells us, using only observable data, how good our model is
   \end{itemize}
@@ -150,6 +180,16 @@ instrumental variable $z$
 \begin{align*}
   \E[\epsilon \mid z] = 0
 \end{align*}
+\end{frame}
+
+
+\begin{frame}
+\begin{columns}[t, onlytextwidth]
+    \column{.47\textwidth}
+    \includegraphics[width = 0.9\textwidth]{../screen_shots/Fredholm.jpeg}
+    \column{.47\textwidth}
+    \includegraphics[width = 0.9\textwidth]{../screen_shots/Fredholm_crater.jpg}
+\end{columns}
 \end{frame}
 
 
@@ -204,11 +244,11 @@ This task is a supervised learning problem.
 \begin{frame}{High-dimensional data}
 \begin{itemize}
   \item many ``features'' are considered for prediction
-  \item consider many economic variables 
+  \pause\item consider many economic variables 
   \begin{itemize}
     \item examples: detailed census data, social network activity
   \end{itemize}
-  \item uncertainty about functional form 
+  \pause\item uncertainty about functional form 
   \begin{itemize}
     \item consider many transformations/interactions of small set of economic variables
   \end{itemize}
@@ -221,6 +261,7 @@ This task is a supervised learning problem.
   \item images 
   \item texts 
   \item social media usage 
+  \pause
   \item pre-processing step converts these into \emph{high-dimensional} datasets
   \item \emph{unsupervised learning} in pre-processing  
 \end{itemize}
@@ -254,9 +295,9 @@ This task is a supervised learning problem.
 \begin{frame}{Impressive results in data-rich environments}
 \begin{itemize}
   \item 
-  predicting related products in a large online shop (customers are continuously creating new data through "clicks")
-  \item 
   predicting viewing behavior on Netflix
+  \item 
+  predicting related products in a large online shop (customers are continuously creating new data through "clicks")
   \item 
   \pause
   Prediction tasks in AI: teaching a robot how to walk, teach an AI to play a video game 
@@ -290,6 +331,7 @@ This task is a supervised learning problem.
   \begin{itemize}
     \item the usual caveat applies 
   \end{itemize}
+  \pause
   \item Python or R if you want to get real
   \begin{itemize}
     \item don't share Stata's caveat
@@ -297,6 +339,7 @@ This task is a supervised learning problem.
     \item free and pre-installed on many clusters
     \item easy file system and string manipulation 
   \end{itemize}
+  \pause
   \item libraries with bindings to different languages
   \begin{itemize}
     \item Google's tensorflow (including R and Python)
