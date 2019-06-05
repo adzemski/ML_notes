@@ -103,12 +103,12 @@ Let $y(1)$ and $y(0)$ denote the latent outcomes for the treated and untreated s
 The observed outcome is given by $y = y(1)w + y(0)(1 - w)$.
 We assume 
 \begin{align*}
-	y(0), y(1) \perp w \mid x \qquad \text{unconfoundedness}.
+	y(0), y(1) \perp w \mid x \qquad \text{(unconfoundedness)}.
 \end{align*}
 To keep things simple\footnote{We want to be able to use the notion of a density from elementary calculus, rather than dealing with serious measure theory and Lebesgue integration. Our results will not depend on this simplification.} we assume that $x$ is continous with respect to Lebesgue measure. Let $f_x$ denote the unconditional density of $x$ and let $f_{x \mid w = w'}$ denote the conditional density of $x$ when the treatment takes the value $w = w' \in \{0,1\}$. 
 You may assume 
 \begin{align*}
-	\supp(f_{x \mid w = 0}) = \supp(f_{x \mid w = 1}) \qquad \text{overlapping support.}
+	\supp(f_{x \mid w = 0}) = \supp(f_{x \mid w = 1}) \qquad \text{(overlapping support).}
 \end{align*}
 Let $p^w$ denote the unconditional probability of treatment and let $e_1(x')$ denote the conditional probability of treatment if $x = x'$.
 Let $f(x, w)$ denote the joint density of $x$ and $w$ While this is not a density with respect to Lebesgue measure (what is it?) it still satisfies the equations 
