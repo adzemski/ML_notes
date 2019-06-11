@@ -1,4 +1,5 @@
-\documentclass[xcolor=dvipsnames]{beamer}
+% \documentclass[xcolor=dvipsnames]{beamer}
+\documentclass[xcolor=dvipsnames, handout]{beamer}
 
 \usepackage[]{graphicx}
 \usepackage[]{color}
@@ -158,7 +159,7 @@ where $\lVert \beta_1 \rVert_q = \left(\sum_{j=1}^{p_n} \lvert \beta_{1, j} \rve
 
 \begin{frame}{$L_q$-penalized regression}
 \begin{align*}
-  \hat{\beta}^{\text{ridge}} = \argmin_{\beta_0 \in \mathbb{R}, \beta_1 \in \mathbb{R}^{p_n}} \underbrace{\sum_{i=1}^n \left(y - \beta_0 - x_i'\beta_1\right)^2}_{\text{loss function}} + \underbrace{\lambda \lVert \beta_1 \rVert_q^q}_{\text{penalty term}} 
+  \hat{\beta}^{\text{ridge}} = \argmin_{\beta_0 \in \mathbb{R}, \beta_1 \in \mathbb{R}^{p_n}} \underbrace{\sum_{i=1}^n \left(y_i - \beta_0 - x_i'\beta_1\right)^2}_{\text{loss function}} + \underbrace{\lambda \lVert \beta_1 \rVert_q^q}_{\text{penalty term}} 
 \end{align*}
 \begin{itemize}[<+->]
   \item because of the penalty term ``best'' in-sample fit is costly
@@ -453,7 +454,7 @@ where $\Psi$ is a weight matrix. To exclude the first two coefficients from pena
 \end{frame}
 
 \begin{frame}{``Double'' selection procedure \parencite{belloni2014inference}}
-\begin{itemize}
+\begin{itemize}[<+->]
   \item intuition: detect variables that are highly correlated with $x_1$ and make sure they are always selected
   \item model: based on standard model for ``regression type'' treatment evaluation model under unconfoundedness
 \end{itemize}
@@ -546,11 +547,244 @@ the setting in \textcite{belloni2014inference} is a special case (show this!)
 \end{itemize}
 \end{frame}
 
-\begin{frame}
+
+\begin{frame}{More on variable selection through penalization}
+\begin{enumerate}[<+->]
+  \item other loss functions
+  \begin{itemize}
+    \item example: for binary regression
+  \end{itemize}
+  \item other penalization strategies
+  \item grouped variables 
+  \item multiple outcomes (multi-target learning)
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}{Selecting variable in ML estimation}
+
+\begin{itemize}[<+->]
+  \item for binary regression $L_2$-loss not appropriate
+  \item we prefer logit or probit
+  \item generalized linear model 
+  \begin{align*}
+    \E [y] = g^{-1} (x'\beta), 
+  \end{align*} 
+  for \emph{link function} $g$.
+  \item example: logistic link for logistic regression 
+  \begin{align*}
+    g(t) = \log \left(\frac{t}{1 - t}\right)
+  \end{align*}
+  \item maximum likelihood estimation 
+  \item loss function = Kullback-Leibler divergence
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Ridge and Lasso for generalized linear models}
+
+\begin{itemize}[<+->]
+  \item similar properties to penalized least squares 
+  \begin{itemize}
+    \item prediction is improved 
+    \item $L_1$-penalty selects variables
+  \end{itemize}
+  \item implemented and ready to use 
+  \begin{itemize}
+    \item \texttt{glmnnet} package for R
+  \end{itemize}
+  \item algorithms that can cheaply compute the whole \emph{solution path}
+  \begin{itemize}
+    \item solution path = solutions for all $\lambda$
+    \item cross-validiation is cheap
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Choice of penalization}
+\begin{itemize}
+  \item $L_{\textcolor{red}{q}}$-penalized regression for different $\textcolor{red}{q}$
+\end{itemize}
+\begin{figure}
+  \includegraphics[width = 0.8\textwidth]{../screen_shots/ESL_fig_3_12.pdf}
+   \caption{Figure~3.12 from \textcite{hastie2009elements}}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Choice of penalization}
+$L_q$ regression with
+\begin{description}
+  \item[$q = 2$] for prediction (Ridge regression)
+  \item[$q = 1$] for model selection (Lasso). 
+\end{description}
+\begin{itemize}[<+->]
+  \item middleground?
+  \item we can do $L_{\textcolor{red}{q}}$-penalized regression $\textcolor{red}{q} \in (1, 2)$
+  \item use convex combination of Ridge and Lasso penalties
+  \item \emph{elastic net} penalty 
+  \begin{align*}
+    \lambda \left(\alpha \lVert{\beta_1}\rVert_2^2 + (1 - \alpha) \lVert{\beta_1\rVert}_1\right)
+  \end{align*}
+  for $\alpha \in (0, 1)$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{$L_q$ penalty vs elastic net}
+\begin{figure}
+  \includegraphics[width = 0.8\textwidth]{../screen_shots/ESL_fig_3_13.pdf}
+   \caption{Figure~3.13 from \textcite{hastie2009elements}}
+\end{figure}
+\begin{itemize}[<+->]
+  \item for $q > 1$, $L_q$ penalty is differentiable
+  \item does not select variables 
+  \item elastic net selects variables 
+  \item cross-validation choice of $\alpha$?
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Penalization based directly on sparsity}
+Let 
+\begin{align*}
+  \lVert \beta_1 \rVert_0 = \sum_{j = 1}^{p_n} \mathbf{1}\{\beta_j \neq 0\}.
+\end{align*}
+\begin{itemize}[<+->]
+  \item sparsity norm
+  \item could try to solve
+  \begin{align*}
+    \min_{\beta_0 \in \mathbb{R}, \beta_1 \in \mathbb{R}^{p_n}} \sum_{i=1}^n (y_i - \beta_0 - x_i'\beta_1)^2  + \lambda \lVert \beta_1 \rVert_0
+  \end{align*}
+  \item ``the $L_1$-norm [\dots] provides the tightest convex relaxation of the $L_2$-norm'' \parencite{she2012iterative}
+  \item we shouldn't really have sparsity by itself as a goal
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Grouped Lasso}
+\begin{itemize}[<+->]
+  \item variables are naturally sorted into $L$ groups 
+  \item objective: select groups together
+  \item model 
+  \begin{align*}
+    y = \beta_0 + \beta_1'x_1 + \dotsm + \beta_L' x_L + \epsilon 
+  \end{align*}
+  \item grouped penalty 
+  \begin{align*}
+    \lambda \sum_{\ell = 1}^L w_\ell \lVert{\beta_{\ell}}\rVert,
+  \end{align*}
+  for weights $\{w_{\ell}\}_{\ell = 1}^{L}$ and a norm $\lVert \cdot \rVert$
+  \item \emph{grouped Lasso} \parencite{bakin1999adaptive,yuan2006model}
+  \begin{itemize}
+    \item why ``Lasso'' regardless of choice of $\Vert \cdot \rVert$?
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Grouped Lasso}
+  \begin{itemize}[<+->]
+    \item $\Vert \cdot \rVert = \Vert \cdot \rVert_1$ doesn't work. Why?
+    \item $L_q$ with $q > 1$ works 
+    \item usually $q = 2$ so that penalty is 
+    \begin{align*}
+      \lambda \sum_{\ell = 1}^L w_\ell \lVert{\beta_{\ell}}\rVert_2
+    \end{align*}
+    \item $\lVert{\beta_{\ell}}\rVert_2$ is not squared
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{}
+\begin{figure}
+  \includegraphics[width = 0.54\textwidth]{../screen_shots/yian_lin_2006_fig1.pdf}
+   \caption{Figure~1 from \textcite{yuan2006model}: Grouped lasso with $\lVert \cdot \rVert = \lVert \cdot \rVert_2$ selects variables.}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Grouped Lasso}
+\begin{itemize}
+    \item less common: $\lVert\cdot\rVert = \lVert\cdot\rVert_{\infty}$ \parencite{turlach2005simultaneous}, 
+    \begin{align*}
+      \lambda \sum_{\ell = 1}^L w_\ell \max_{j} \lvert{\beta_{\ell,j}}\rvert
+    \end{align*}
+    \item corresponds to $q = \infty$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Multiple outcomes}
+\begin{itemize}
+  \item references: \textcite{breiman1997predicting,turlach2005simultaneous,simila2007input,sofer2014variable}
+  \item loss function for multivariate outcomes
+  \item example with $K$ outcomes:
+  \begin{align*}
+    \sum_{k = 1}^K \sum_{i=1}^n \left(y_{i,k} - \beta_{0,k} - \beta_{1,k}'x_{i}\right)^2 
+    = \left\lVert 
+      \mathbf{Y} - \mathbf{B}_0 - \mathbf{X} \mathbf{B}_1
+    \right\rVert_F, 
+  \end{align*}
+  where 
+  \begin{align*}
+    \mathbf{Y} = \left(y_{i,k}\right)_{\substack{i=1, \dotsc, n\\j=1, \dotsc, k}}
+    \quad 
+    \mathbf{X} = \left(x_{i}'\right)_{i=1, \dotsc, n}  
+  \\
+    \quad
+    \mathbf{B}_0 = \left(\beta_{0,k}\right)_{\substack{i = 1, \dotsc,n \\k=1, \dotsc, K}}
+    \quad
+    \mathbf{B}_1 = \left(\beta_{1,k}\right)_{k=1, \dotsc, K}
+  \end{align*}
+  \item group lasso penalty
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Back to treatment evaluation under unconfoundedness}
 \begin{itemize}[<+->]
   \item the approach in \textcite{belloni2014inference} requires sparse model for selection equation 
   \item is \emph{not} robust to misspecification of selection equation (propensity score)
-  \item \emph{rebalancing methods} are often robust to misspecification of propensity score \parencite{robins1997toward}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+  \includegraphics[width = \textwidth]{../screen_shots/athey_et_al_2018_figure_1.pdf}
+   \caption{Figure~1 from \textcite{athey2018approximate}}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Estimating the treatment effect on the treated}
+\begin{itemize}
+  \item $w$ = binary treatment indicator
+  \item $x$ = control variables ($p_n$-vector)
+  \item $y$ = outcome variable  
+  \item $n_t = \sum_{\{i: w_i = 1\}} 1$
+  \item assume unconfoundedness
+  \begin{align*}
+    \left( y(0), y(1) \right) \perp w \mid x
+  \end{align*}
+  \item treatment effect on the treated 
+  \begin{align*}
+    \tau = \E \left[y(1) - y(0) \mid w = 1\right]
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Idea of balancing approach}
+\begin{itemize}
+  \item estimate \emph{control outcome of the treated} by reweighing outcomes in control group 
+  \begin{align*}
+    \widehat{\E[y(0) \mid w = 1]} = \sum_{i: w_i = 0} \hat{\gamma}_i y_i
+  \end{align*}
+  \item weight sequence $\{\hat{\gamma}\}_{i: w_i = 0}$ balances covariates in treatment and control group
+  \begin{align*}
+    \frac{1}{n_t} \sum_{\{i: w_i = 1\}} x_{i, j} \approx \sum_{\{i: w_i = 0\}} \hat{\gamma}_i x_{i,j} \qquad \text{for $j = 1, \dotsc, p_n$}.
+  \end{align*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Robustness of balancing approach}
+\begin{itemize}[<+->]
+  \item \emph{balancing methods} are often robust to misspecification of propensity score \parencite{robins1997toward}
   \item examples of rebalancing methods
   \begin{itemize}
     \item inverse probability weighting \parencite{cassel1976some,robins1986new}
@@ -561,11 +795,7 @@ the setting in \textcite{belloni2014inference} is a special case (show this!)
 
 \begin{frame}{\textcite{athey2018approximate}}
 \begin{itemize}[<+->]
-  \item treatment effect on the treated $\tau$
   \item combine regression and rebalancing techniques
-  \item $w$ = binary treatment indicator
-  \item $x$ = control variables ($p_n$-vector)
-  \item $y$ = outcome variable
   \item outcome model 
   \begin{align*}
     y_i = \begin{cases}
@@ -678,6 +908,35 @@ weight estimation
 \end{itemize}
 \end{frame}
 
-\appendix
+\begin{frame}{Simulation results for root-mean-squared error}
+\begin{figure}
+  \includegraphics[width = \textwidth]{../screen_shots/athey_et_al_2018_table_1.pdf}
+   \caption{Table~1 from \textcite{athey2018approximate}.}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Wrap up of Part I}
+\begin{itemize}[<+-> ]
+  \item supervised learning = statistical methods for prediction
+  \item causal inference includes predictive tasks
+  \item two-step process
+  \begin{itemize}
+    \item choose hyperparameters 
+    \item train the model
+  \end{itemize}
+  \item prediction tasks can be validated 
+  \begin{itemize}
+    \item validation data set
+    \item cross-validation
+  \end{itemize}
+  \item linear model: coefficient interpretation
+  \begin{itemize}
+    \item for predictive tasks coefficient may have no economic interpretation
+    \item shrinkage 
+    \item post-lasso: omitted variable bias
+  \end{itemize}
+\end{itemize}
+\end{frame}
 
 \end{document}

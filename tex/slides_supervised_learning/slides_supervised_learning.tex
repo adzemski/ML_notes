@@ -1,5 +1,5 @@
-% \documentclass[xcolor=dvipsnames, handout]{beamer}
-\documentclass[xcolor=dvipsnames]{beamer}
+\documentclass[xcolor=dvipsnames, handout]{beamer}
+% \documentclass[xcolor=dvipsnames]{beamer}
 
 \usepackage[]{graphicx}
 \usepackage[]{color}
@@ -365,7 +365,7 @@ Average over partitions
 \begin{frame}{Example}
   \begin{figure}
   \includegraphics{../../R_code/penalized_regression/output_for_slides/cv_example_lambda_path.pdf}
-   \caption{Cross-validation $CV(\lambda)$, $k = 10$ folds}
+   \caption{Cross-validation $CV(\lambda)$, $k = 10$ folds. Here: small $\lambda$ = simple model, large $\lambda$ = complex model.}
 \end{figure}
 \end{frame}
 
@@ -376,6 +376,7 @@ Average over partitions
   \hat{\lambda} = \hat{\lambda}_{\min} = \argmin_{\lambda} CV(\lambda)
 \end{align*}
 \pause 
+\item suppose large $\lambda$ = simpler model (more regularization)
 \item impose additional regularization: 1-$\sigma$ rule
 \begin{align*}
   \hat{\lambda} = & \hat{\lambda}_{1\sigma} 
@@ -388,7 +389,7 @@ Average over partitions
 \begin{frame}{Example}
   \begin{figure}
   \includegraphics{../../R_code/penalized_regression/output_for_slides/cv_example_lambda_choice.pdf}
-   \caption{Optimal choice of $\lambda$, $k = 10$ folds}
+   \caption{Optimal choice of $\lambda$, $k = 10$ folds. Here: small $\lambda$ = simple model, large $\lambda$ = complex model.}
 \end{figure}
 \end{frame}
 
